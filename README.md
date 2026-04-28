@@ -19,3 +19,13 @@ This platform provides a single, always-accessible space where:
 	•	Reviews are organized by course, professor, and semester
 	•	Content is moderated to ensure appropriateness and reliability
 	•	Access is restricted to verified AUB users only
+
+---
+
+## Newman Testing
+
+The backend Newman suite reads its target host from environment variables instead of hardcoding localhost.
+
+Use [backend/scripts/run_newman_tests.ps1](backend/scripts/run_newman_tests.ps1) to run the collection. It reads `BACKEND_URL` from [backend/.env](backend/.env) when present, otherwise it falls back to `http://localhost:8000`.
+
+For deployment, set `BACKEND_URL` to the public API URL. For local testing, leave it on the localhost default.
