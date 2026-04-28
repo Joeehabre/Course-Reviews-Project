@@ -140,3 +140,6 @@ frontend/*.sw?
 # Vite cache
 .vite
 frontend/.vite
+
+
+.claude/
