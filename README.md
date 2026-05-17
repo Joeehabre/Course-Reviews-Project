@@ -8,6 +8,8 @@
   <img src="https://img.shields.io/badge/Course-CMPS%20271%20AUB-blue?style=for-the-badge"/>
 </p>
 
+![CI](https://github.com/Joeehabre/Course-Reviews-Project/actions/workflows/ci.yml/badge.svg)
+
 A full-stack web platform where **AUB students** can anonymously review courses and professors, helping peers make better course registration decisions.
 
 Built as a team project for **CMPS 271** at the **American University of Beirut (AUB)**.
