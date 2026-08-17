@@ -18,15 +18,16 @@ Built as a team project for **CMPS 271** at the **American University of Beirut 
 
 ## My Contributions
 
-I was the largest contributor to this project by commit count. My main work:
+This was a five-person team project. My main work:
 
+- **Admin API** — wrote the admin endpoints (`backend/app/api/admin.py`) in full
 - **Admin dashboard** — corrected the data shown to admins and added admin access from the navbar
 - **Authentication** — implemented the logout flow
-- **Review interactions** — built the like / dislike mechanism on the front end
-- **UI work** — landing page design and profile page layout
+- **Review interactions** — the like / dislike mechanism on the front end
+- **UI work** — landing page design, app routing, and profile page layout
 - **Project setup** — repository README, MIT license, and the CI pipeline (frontend build + backend lint)
 
-The remaining features were built by my teammates; full authorship is visible in the commit history.
+My teammates built the remaining features, and several of them contributed more of the codebase than I did. Full authorship is visible in the commit history.
 
 ---
 
