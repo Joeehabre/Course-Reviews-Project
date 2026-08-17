@@ -12,7 +12,21 @@
 
 A full-stack web platform where **AUB students** can anonymously review courses and professors, helping peers make better course registration decisions.
 
-Built as a team project for **CMPS 271** at the **American University of Beirut (AUB)**.
+Built as a team project for **CMPS 271** at the **American University of Beirut (AUB)** by a group of five.
+
+---
+
+## My Contributions
+
+I was the largest contributor to this project by commit count. My main work:
+
+- **Admin dashboard** — corrected the data shown to admins and added admin access from the navbar
+- **Authentication** — implemented the logout flow
+- **Review interactions** — built the like / dislike mechanism on the front end
+- **UI work** — landing page design and profile page layout
+- **Project setup** — repository README, MIT license, and the CI pipeline (frontend build + backend lint)
+
+The remaining features were built by my teammates; full authorship is visible in the commit history.
 
 ---
 
