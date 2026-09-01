@@ -1,4 +1,4 @@
-# AUB Course Review Platform — CMPS 271
+# AUB Course Review Platform: CMPS 271
 
 <p align="left">
   <img src="https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB?style=for-the-badge&logo=react&logoColor=black"/>
@@ -20,11 +20,11 @@ Built as a team project for **CMPS 271** at the **American University of Beirut 
 
 This was a five-person team project. My main work:
 
-- **Admin API** — wrote the admin endpoints (`backend/app/api/admin.py`) in full
-- **Admin dashboard** — corrected the data shown to admins and added admin access from the navbar
-- **Review interactions** — the like / dislike mechanism on the front end
-- **UI work** — landing page design, the app shell and routing (`App.jsx`), and profile page layout
-- **Project setup** — repository README, MIT license, and the CI pipeline (frontend build + backend lint)
+- **Admin API**: wrote the admin endpoints (`backend/app/api/admin.py`) in full
+- **Admin dashboard**: corrected the data shown to admins and added admin access from the navbar
+- **Review interactions**: the like / dislike mechanism on the front end
+- **UI work**: landing page design, the app shell and routing (`App.jsx`), and profile page layout
+- **Project setup**: repository README, MIT license, and the CI pipeline (frontend build + backend lint)
 
 My teammates built the remaining features, and several of them contributed more of the codebase than I did. Full authorship is visible in the commit history.
 
@@ -32,7 +32,7 @@ My teammates built the remaining features, and several of them contributed more 
 
 ## The Problem
 
-Students rely on scattered informal sources — group chats, social media — to learn about courses and professors. There was no single, reliable, always-accessible place for honest structured feedback.
+Students rely on scattered informal sources, group chats, social media, to learn about courses and professors. There was no single, reliable, always-accessible place for honest structured feedback.
 
 ## The Solution
 
