@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision: str = "fix_violation_status_constraint"
-down_revision: Union[str, Sequence[str], None] = "relax_legacy_violations_reason"
+down_revision: Union[str, Sequence[str], None] = "add_cmps_courses"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
