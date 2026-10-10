@@ -19,7 +19,9 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Override the URL from environment so secrets never live in alembic.ini
-normalized_url, _ = _normalize_asyncpg_url(os.environ["DATABASE_URL"])
+from app.core.config import settings
+raw_db_url = os.environ.get("DATABASE_URL") or settings.DATABASE_URL
+normalized_url, _ = _normalize_asyncpg_url(raw_db_url)
 config.set_main_option("sqlalchemy.url", normalized_url)
 
 target_metadata = Base.metadata

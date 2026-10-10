@@ -59,6 +59,7 @@ async def get_by_professor(
         query = query.where(Section.semester_id == semester_id)
     query = query.options(
         selectinload(Section.course),
+        selectinload(Section.professor),
         selectinload(Section.semester),
     ).offset(skip).limit(limit)
     result = await db.execute(query)
@@ -77,6 +78,7 @@ async def get_by_semester(
         .options(
             selectinload(Section.course),
             selectinload(Section.professor),
+            selectinload(Section.semester),
         )
         .offset(skip)
         .limit(limit)

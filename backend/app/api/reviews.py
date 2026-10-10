@@ -8,7 +8,7 @@ from typing import Literal
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, Query, status, Depends
 
-from app.dependencies import DBDep, CurrentUserOptional, CurrentStudent, AdminUser
+from app.dependencies import DBDep, CurrentUser, CurrentUserOptional, CurrentStudent, AdminUser
 from app.schemas import ReviewCreate, ReviewUpdate, ReviewOut, ReviewStatusUpdate, InteractionResponse
 from app import crud
 
@@ -19,14 +19,10 @@ router = APIRouter(tags=["reviews"])
 # Muted / Blocked enforcement
 # ---------------------------------------------------------------------------
 
-def enforce_not_muted_or_blocked(student: CurrentStudent):
+def enforce_not_muted_or_blocked(user: CurrentUser):
     """
     Blocks review posting/editing/deleting if the user is blocked or muted.
     """
-    user = getattr(student, "user", None)
-    if not user:
-        raise HTTPException(status_code=401, detail="No user linked to student")
-
     if getattr(user, "is_blocked", False):
         raise HTTPException(status_code=403, detail="User is blocked")
 

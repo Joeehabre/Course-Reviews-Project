@@ -13,9 +13,11 @@ from app.schemas import (
     UserOut,
     StudentOut,
     StudentUpdate,
+    ProfessorOut,
     AdminUserOut,
     AdminUserRolesUpdate,
     AdminUserStatusUpdate,
+    ViolationOut,
 )
 from app import crud
 
@@ -32,7 +34,7 @@ async def get_me(db: DBDep, user: CurrentUser):
     return MeResponse(
         user=UserOut.model_validate(user),
         student=StudentOut.model_validate(student) if student else None,
-        professor=None,  # ProfessorOut omitted from response for students; included if professor
+        professor=ProfessorOut.model_validate(professor) if professor else None,
         roles=[r.role for r in roles],
     )
 
@@ -58,6 +60,16 @@ async def delete_my_account(db: DBDep, user: CurrentUser):
     """
     await crud.users.delete(db, user)
     await db.commit()
+
+
+@router.get("/me/violations", response_model=list[ViolationOut])
+async def get_my_violations(
+    db: DBDep,
+    student: CurrentStudent,
+):
+    """Return resolved violations associated with the current student's reviews."""
+    violations = await crud.violations.get_by_student_reviews(db, student.id, status="resolved")
+    return [ViolationOut.model_validate(v) for v in violations]
 
 
 @router.get("/admin/list", response_model=list[AdminUserOut])

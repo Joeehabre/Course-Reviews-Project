@@ -101,7 +101,7 @@ Interactive API docs: `http://localhost:8000/docs`
 ```bash
 cd frontend
 npm install
-cp .env.example .env          # set VITE_API_URL
+cp .env.example .env          # set VITE_BACKEND_URL
 npm run dev
 ```
 

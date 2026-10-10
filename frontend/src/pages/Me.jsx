@@ -29,20 +29,14 @@ function Me({ onLogout }) {
         setUserData(me)
         setMyReviews(reviews || [])
 
-        try {
-          const violations = await api.violations.list({
-            status_filter: "resolved",
-            limit: 100,
-          })
-          const studentId = me?.student?.id
-          const visibleViolations = (violations || []).filter((violation) => {
-            if (!violation || violation.status !== "resolved") return false
-            return studentId && violation.review?.student?.id === studentId
-          })
-          setResolvedViolations(visibleViolations)
-        } catch (violationErr) {
-          console.warn("Unable to fetch violations for profile page:", violationErr)
-          setResolvedViolations([])
+        if (me?.student?.id) {
+          try {
+            const violations = await api.users.getMyViolations()
+            setResolvedViolations(violations || [])
+          } catch (violationErr) {
+            console.warn("Unable to fetch violations for profile page:", violationErr)
+            setResolvedViolations([])
+          }
         }
       } catch (err) {
         console.error("Error fetching user:", err)

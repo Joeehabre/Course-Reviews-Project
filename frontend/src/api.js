@@ -108,6 +108,10 @@ const users = {
     return request(`/users/me/reviews${q ? "?" + q : ""}`)
   },
 
+  async getMyViolations() {
+    return request("/users/me/violations")
+  },
+
   async adminList(params = {}) {
     const q = new URLSearchParams(params).toString()
     return request(`/users/admin/list${q ? "?" + q : ""}`)
@@ -124,6 +128,31 @@ const users = {
     return request(`/users/admin/${userId}/status`, {
       method: "PATCH",
       body: JSON.stringify({ status: statusValue }),
+    })
+  },
+
+  async muteUser(userId, minutes) {
+    return request(`/admin/users/${userId}/mute`, {
+      method: "POST",
+      body: JSON.stringify({ minutes }),
+    })
+  },
+
+  async unmuteUser(userId) {
+    return request(`/admin/users/${userId}/unmute`, {
+      method: "POST",
+    })
+  },
+
+  async blockUser(userId) {
+    return request(`/admin/users/${userId}/block`, {
+      method: "POST",
+    })
+  },
+
+  async unblockUser(userId) {
+    return request(`/admin/users/${userId}/unblock`, {
+      method: "POST",
     })
   },
 }

@@ -154,3 +154,21 @@ async def update_for_admin(
     violation.updated_at = datetime.utcnow()
     await db.flush()
     return violation
+
+
+async def get_by_student_reviews(
+    db: AsyncSession,
+    student_id: uuid.UUID,
+    status: Optional[str] = "resolved",
+) -> list[Violation]:
+    query = (
+        select(Violation)
+        .join(Review, Violation.review_id == Review.id)
+        .where(Review.student_id == student_id)
+        .options(*_violation_review_options())
+        .order_by(desc(Violation.created_at))
+    )
+    if status:
+        query = query.where(Violation.status == status)
+    result = await db.execute(query)
+    return list(result.scalars().all())

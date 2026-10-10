@@ -2,7 +2,7 @@ from itsdangerous import URLSafeSerializer, BadSignature
 from fastapi import Response, Request, HTTPException, status, Depends
 from sqlalchemy.orm import Session
 from app.core.config import settings
-from app.core.database import get_db
+from app.db.base import get_db
 
 COOKIE_NAME = "app_session"
 COOKIE_MAX_AGE = 60 * 60 * 24 * 7  # 7 days

@@ -689,6 +689,7 @@ function Reviews({ user, initialCourseId = "", initialProfessorId = "", navigati
             <label>Sort By</label>
             <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
               <option value="newest">Newest</option>
+              <option value="top_rated">Top Rated</option>
               <option value="worst_rated">Worst Rated</option>
               <option value="most_liked">Most Liked</option>
             </select>
