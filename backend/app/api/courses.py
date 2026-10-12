@@ -37,9 +37,13 @@ async def list_courses(
     else:
         courses = await crud.courses.get_all(db, department=department, skip=skip, limit=limit)
 
-    ratings = await crud.reviews.get_average_rating_for_courses(db, [course.id for course in courses])
+    stats = await crud.reviews.get_stats_for_courses(db, [course.id for course in courses])
     return [
-        CourseOutWithStats(**CourseOut.model_validate(course).model_dump(), average_rating=ratings.get(course.id))
+        CourseOutWithStats(
+            **CourseOut.model_validate(course).model_dump(),
+            average_rating=stats.get(course.id, {}).get("average_rating"),
+            review_count=stats.get(course.id, {}).get("review_count", 0),
+        )
         for course in courses
     ]
 
@@ -55,8 +59,12 @@ async def get_course(course_id: uuid.UUID, db: DBDep):
     course = await crud.courses.get_by_id(db, course_id)
     if not course:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
-    avg = await crud.reviews.get_average_rating_for_courses(db, [course_id])
-    return CourseOutWithStats(**CourseOut.model_validate(course).model_dump(), average_rating=avg.get(course_id))
+    stats = await crud.reviews.get_stats_for_courses(db, [course_id])
+    return CourseOutWithStats(
+        **CourseOut.model_validate(course).model_dump(),
+        average_rating=stats.get(course_id, {}).get("average_rating"),
+        review_count=stats.get(course_id, {}).get("review_count", 0),
+    )
 
 
 @courses_router.get("/{course_id}/sections", response_model=list[SectionOut])
@@ -81,7 +89,7 @@ async def get_course_sections(
 professors_router = APIRouter(prefix="/professors", tags=["professors"])
 
 
-@professors_router.get("", response_model=list[ProfessorOut])
+@professors_router.get("", response_model=list[ProfessorOutWithStats])
 async def list_professors(
     db: DBDep,
     department: Optional[str] = Query(default=None),
@@ -90,8 +98,19 @@ async def list_professors(
     limit: int = Query(default=50, ge=1, le=100),
 ):
     if search:
-        return await crud.professors.search(db, search, skip=skip, limit=limit)
-    return await crud.professors.get_all(db, department=department, skip=skip, limit=limit)
+        professors = await crud.professors.search(db, search, skip=skip, limit=limit)
+    else:
+        professors = await crud.professors.get_all(db, department=department, skip=skip, limit=limit)
+
+    stats = await crud.reviews.get_stats_for_professors(db, [p.id for p in professors])
+    return [
+        ProfessorOutWithStats(
+            **ProfessorOut.model_validate(p).model_dump(),
+            average_rating=stats.get(p.id, {}).get("average_rating"),
+            review_count=stats.get(p.id, {}).get("review_count", 0),
+        )
+        for p in professors
+    ]
 
 
 @professors_router.get("/{professor_id}", response_model=ProfessorOutWithStats)
@@ -99,10 +118,11 @@ async def get_professor(professor_id: uuid.UUID, db: DBDep):
     professor = await crud.professors.get_by_id(db, professor_id)
     if not professor:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Professor not found")
-    avg = await crud.reviews.get_average_rating_for_professor(db, professor_id)
+    stats = await crud.reviews.get_stats_for_professors(db, [professor_id])
     return ProfessorOutWithStats(
         **ProfessorOut.model_validate(professor).model_dump(),
-        average_rating=avg,
+        average_rating=stats.get(professor_id, {}).get("average_rating"),
+        review_count=stats.get(professor_id, {}).get("review_count", 0),
     )
 
 

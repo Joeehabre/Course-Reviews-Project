@@ -169,6 +169,7 @@ function Reviews({ user, initialCourseId = "", initialProfessorId = "", navigati
   const [selectedCourse, setSelectedCourse] = useState("")
   const [selectedProfessor, setSelectedProfessor] = useState("")
   const [sortBy, setSortBy] = useState("newest")
+  const [ratingSummary, setRatingSummary] = useState(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -296,6 +297,7 @@ function Reviews({ user, initialCourseId = "", initialProfessorId = "", navigati
   useEffect(() => {
     if (!selectedCourse && !selectedProfessor) {
       setReviews([])
+      setRatingSummary(null)
       return
     }
 
@@ -307,37 +309,38 @@ function Reviews({ user, initialCourseId = "", initialProfessorId = "", navigati
         let data = []
 
         if (selectedCourse) {
-          const courseSections = sections.length
-            ? sections
-            : await api.courses.getSections(selectedCourse)
-
-          const filtered = selectedProfessor
-            ? courseSections.filter(
-                (s) => String(s.professor?.id) === String(selectedProfessor)
-              )
-            : courseSections
-
-          const allReviews = await Promise.all(
-            filtered.map((s) =>
-              api.sections.getReviews(s.id, { sort_by: sortBy }).catch(() => [])
-            )
-          )
-          data = allReviews.flat()
+          const [courseReviews, summary] = await Promise.all([
+            api.courses.getReviews(selectedCourse, {
+              professor_id: selectedProfessor || undefined,
+              sort_by: sortBy,
+            }),
+            api.courses.getRatingSummary(selectedCourse, {
+              professor_id: selectedProfessor || undefined,
+            }).catch(() => null),
+          ])
+          data = courseReviews || []
+          setRatingSummary(summary)
         } else if (selectedProfessor) {
-          data = await api.professors.getReviews(selectedProfessor, { sort_by: sortBy })
+          const [profReviews, summary] = await Promise.all([
+            api.professors.getReviews(selectedProfessor, { sort_by: sortBy }),
+            api.professors.getRatingSummary(selectedProfessor).catch(() => null),
+          ])
+          data = profReviews || []
+          setRatingSummary(summary)
         }
 
         setReviews(data || [])
       } catch (err) {
         console.error("Failed to load reviews:", err)
         setReviews([])
+        setRatingSummary(null)
       } finally {
         setLoading(false)
       }
     }
 
     loadReviews()
-  }, [selectedCourse, selectedProfessor, sortBy, sections])
+  }, [selectedCourse, selectedProfessor, sortBy])
 
   const reloadReviews = async (overrideCourse, overrideProfessor) => {
     const course = overrideCourse !== undefined ? overrideCourse : selectedCourse
@@ -349,21 +352,24 @@ function Reviews({ user, initialCourseId = "", initialProfessorId = "", navigati
       let data = []
 
       if (course) {
-        const courseSections =
-          course === selectedCourse && sections.length
-            ? sections
-            : await api.courses.getSections(course)
-
-        const filtered = professor
-          ? courseSections.filter((s) => String(s.professor?.id) === String(professor))
-          : courseSections
-
-        const allReviews = await Promise.all(
-          filtered.map((s) => api.sections.getReviews(s.id, { sort_by: sortBy }).catch(() => []))
-        )
-        data = allReviews.flat()
+        const [courseReviews, summary] = await Promise.all([
+          api.courses.getReviews(course, {
+            professor_id: professor || undefined,
+            sort_by: sortBy,
+          }),
+          api.courses.getRatingSummary(course, {
+            professor_id: professor || undefined,
+          }).catch(() => null),
+        ])
+        data = courseReviews || []
+        setRatingSummary(summary)
       } else if (professor) {
-        data = await api.professors.getReviews(professor, { sort_by: sortBy })
+        const [profReviews, summary] = await Promise.all([
+          api.professors.getReviews(professor, { sort_by: sortBy }),
+          api.professors.getRatingSummary(professor).catch(() => null),
+        ])
+        data = profReviews || []
+        setRatingSummary(summary)
       }
 
       setReviews(data || [])
@@ -623,17 +629,35 @@ function Reviews({ user, initialCourseId = "", initialProfessorId = "", navigati
               </div>
 
               <div className="form-group">
-                <label>Rating *</label>
-                <select
-                  value={formData.rating}
-                  onChange={(e) => setFormData((f) => ({ ...f, rating: e.target.value }))}
-                >
-                  <option value="1">1 — Poor</option>
-                  <option value="2">2 — Fair</option>
-                  <option value="3">3 — Good</option>
-                  <option value="4">4 — Very Good</option>
-                  <option value="5">5 — Excellent</option>
-                </select>
+                <label>Rating * ({formData.rating} / 5)</label>
+                <div style={{ display: "flex", gap: "8px", alignItems: "center", margin: "6px 0" }}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setFormData((f) => ({ ...f, rating: star }))}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        fontSize: "26px",
+                        cursor: "pointer",
+                        color: star <= Number(formData.rating) ? "#f59e0b" : "#d1d5db",
+                        padding: 0,
+                        lineHeight: 1,
+                      }}
+                      title={`${star} Star${star > 1 ? "s" : ""}`}
+                    >
+                      ★
+                    </button>
+                  ))}
+                  <span style={{ fontSize: "14px", color: "#6b7280", marginLeft: "10px", fontWeight: 500 }}>
+                    {Number(formData.rating) === 5 && "Excellent"}
+                    {Number(formData.rating) === 4 && "Very Good"}
+                    {Number(formData.rating) === 3 && "Good"}
+                    {Number(formData.rating) === 2 && "Fair"}
+                    {Number(formData.rating) === 1 && "Poor"}
+                  </span>
+                </div>
               </div>
 
               <button type="submit" disabled={loading}>
@@ -695,6 +719,44 @@ function Reviews({ user, initialCourseId = "", initialProfessorId = "", navigati
             </select>
           </div>
         </div>
+
+        {(selectedCourse || selectedProfessor) && ratingSummary && ratingSummary.review_count > 0 && (
+          <div className="rating-overview-card">
+            <div className="overview-header">
+              <div className="overview-score-box">
+                <span className="overview-big-number">
+                  {ratingSummary.average_rating != null ? ratingSummary.average_rating.toFixed(1) : "N/A"}
+                </span>
+                <div className="overview-stars">
+                  {"★".repeat(Math.round(ratingSummary.average_rating || 0))}
+                  {"☆".repeat(Math.max(0, 5 - Math.round(ratingSummary.average_rating || 0)))}
+                </div>
+                <span className="overview-total-count">
+                  Based on {ratingSummary.review_count} student review{ratingSummary.review_count === 1 ? "" : "s"}
+                </span>
+              </div>
+
+              <div className="overview-distribution">
+                {[5, 4, 3, 2, 1].map((stars) => {
+                  const count = ratingSummary.distribution?.[stars] || 0
+                  const pct =
+                    ratingSummary.review_count > 0
+                      ? Math.round((count / ratingSummary.review_count) * 100)
+                      : 0
+                  return (
+                    <div key={stars} className="distribution-row">
+                      <span className="distribution-label">{stars} ★</span>
+                      <div className="distribution-bar-track">
+                        <div className="distribution-bar-fill" style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className="distribution-count">{count}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         {!loading && !selectedCourse && !selectedProfessor && (
           <div className="no-reviews">

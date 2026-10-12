@@ -88,12 +88,13 @@ async def get_by_professor(
 async def get_by_course(
     db: AsyncSession,
     course_id: uuid.UUID,
+    professor_id: Optional[uuid.UUID] = None,
     status: ReviewStatus = "approved",
     sort_by: SortBy = "newest",
     skip: int = 0,
     limit: int = 20,
 ) -> list[Review]:
-    """Get all reviews for any section of this course."""
+    """Get all reviews for any section of this course, optionally filtered by professor."""
     from app.models.section import Section
     query = (
         select(Review)
@@ -104,6 +105,9 @@ async def get_by_course(
         )
         .options(*_review_section_options())
     )
+    if professor_id is not None:
+        query = query.where(Section.professor_id == professor_id)
+
     query = _apply_sort(query, sort_by)
     result = await db.execute(query.offset(skip).limit(limit))
     return list(result.scalars().all())
@@ -189,6 +193,131 @@ async def get_average_rating_for_professor(
         )
     )
     return result.scalar_one_or_none()
+
+
+async def get_stats_for_courses(
+    db: AsyncSession,
+    course_ids: list[uuid.UUID],
+) -> dict[uuid.UUID, dict]:
+    if not course_ids:
+        return {}
+
+    from app.models.section import Section
+    result = await db.execute(
+        select(
+            Section.course_id,
+            func.avg(Review.rating),
+            func.count(Review.id),
+        )
+        .join(Section, Review.section_id == Section.id)
+        .where(
+            Section.course_id.in_(course_ids),
+            Review.status == "approved",
+        )
+        .group_by(Section.course_id)
+    )
+    return {
+        row[0]: {
+            "average_rating": float(row[1]) if row[1] is not None else None,
+            "review_count": int(row[2]) if row[2] is not None else 0,
+        }
+        for row in result.all()
+    }
+
+
+async def get_stats_for_professors(
+    db: AsyncSession,
+    professor_ids: list[uuid.UUID],
+) -> dict[uuid.UUID, dict]:
+    if not professor_ids:
+        return {}
+
+    from app.models.section import Section
+    result = await db.execute(
+        select(
+            Section.professor_id,
+            func.avg(Review.rating),
+            func.count(Review.id),
+        )
+        .join(Section, Review.section_id == Section.id)
+        .where(
+            Section.professor_id.in_(professor_ids),
+            Review.status == "approved",
+        )
+        .group_by(Section.professor_id)
+    )
+    return {
+        row[0]: {
+            "average_rating": float(row[1]) if row[1] is not None else None,
+            "review_count": int(row[2]) if row[2] is not None else 0,
+        }
+        for row in result.all()
+    }
+
+
+async def get_rating_summary_for_course(
+    db: AsyncSession,
+    course_id: uuid.UUID,
+    professor_id: Optional[uuid.UUID] = None,
+) -> dict:
+    from app.models.section import Section
+    query = (
+        select(Review.rating)
+        .join(Section, Review.section_id == Section.id)
+        .where(
+            Section.course_id == course_id,
+            Review.status == "approved",
+        )
+    )
+    if professor_id is not None:
+        query = query.where(Section.professor_id == professor_id)
+
+    result = await db.execute(query)
+    ratings = [float(r[0]) for r in result.all()]
+    total = len(ratings)
+    avg = sum(ratings) / total if total > 0 else None
+
+    distribution = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+    for r in ratings:
+        bucket = max(1, min(5, round(r)))
+        distribution[bucket] += 1
+
+    return {
+        "average_rating": round(avg, 2) if avg is not None else None,
+        "review_count": total,
+        "distribution": distribution,
+    }
+
+
+async def get_rating_summary_for_professor(
+    db: AsyncSession,
+    professor_id: uuid.UUID,
+) -> dict:
+    from app.models.section import Section
+    query = (
+        select(Review.rating)
+        .join(Section, Review.section_id == Section.id)
+        .where(
+            Section.professor_id == professor_id,
+            Review.status == "approved",
+        )
+    )
+    result = await db.execute(query)
+    ratings = [float(r[0]) for r in result.all()]
+    total = len(ratings)
+    avg = sum(ratings) / total if total > 0 else None
+
+    distribution = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+    for r in ratings:
+        bucket = max(1, min(5, round(r)))
+        distribution[bucket] += 1
+
+    return {
+        "average_rating": round(avg, 2) if avg is not None else None,
+        "review_count": total,
+        "distribution": distribution,
+    }
+
 
 
 async def student_has_reviewed_section(

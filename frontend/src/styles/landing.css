@@ -22,25 +22,86 @@
 
 /* SEARCH SECTION */
 .search-section {
-  margin-bottom: 50px;
+  margin-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
 }
 
 .search-bar {
   width: 100%;
-  max-width: 600px;
-  padding: 15px 20px;
-  font-size: 16px;
+  padding: 14px 44px 14px 22px;
+  font-size: 15px;
   border: 2px solid #e0e0e0;
   border-radius: 30px;
   outline: none;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
 }
 
 .search-bar:focus {
   border-color: #8b1538;
   box-shadow: 0 4px 15px rgba(139, 21, 56, 0.2);
   background-color: #fff;
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 50%;
+  transition: color 0.15s;
+}
+
+.search-clear-btn:hover {
+  color: #8b1538;
+}
+
+.department-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  max-width: 800px;
+}
+
+.dept-pill {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #4b5563;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dept-pill:hover {
+  border-color: #8b1538;
+  color: #8b1538;
+}
+
+.dept-pill.active {
+  background: #8b1538;
+  border-color: #8b1538;
+  color: #ffffff;
+  font-weight: 600;
 }
 
 /* COURSES SECTION */
@@ -81,6 +142,33 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+}
+
+.course-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.course-dept-tag {
+  background: #f3f4f6;
+  color: #4b5563;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.course-rating-pill {
+  font-size: 12px;
+  font-weight: 600;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 2px 8px;
+  border-radius: 999px;
 }
 
 .course-content h3 {
@@ -248,7 +336,26 @@
 .prof-subtitle {
   font-size: 13px;
   color: #777;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
+}
+
+.prof-stats-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+
+.prof-rating {
+  font-weight: 600;
+  color: #b45309;
+}
+
+.prof-reviews-count {
+  color: #6b7280;
+  font-size: 12px;
 }
 
 .view-btn {

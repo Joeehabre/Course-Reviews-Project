@@ -191,6 +191,22 @@ const courses = {
     return request(`/courses/${courseId}/sections${q ? "?" + q : ""}`)
   },
 
+  async getReviews(courseId, params = {}) {
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([_, v]) => v !== undefined && v !== null && v !== "")
+    )
+    const q = new URLSearchParams(cleanParams).toString()
+    return request(`/courses/${courseId}/reviews${q ? "?" + q : ""}`)
+  },
+
+  async getRatingSummary(courseId, params = {}) {
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([_, v]) => v !== undefined && v !== null && v !== "")
+    )
+    const q = new URLSearchParams(cleanParams).toString()
+    return request(`/courses/${courseId}/rating-summary${q ? "?" + q : ""}`)
+  },
+
   async getDepartments() {
     return request("/courses/departments")
   },
@@ -231,12 +247,19 @@ const professors = {
   },
 
   async getCourses(professorId) {
-  return request(`/professors/${professorId}/courses`)
-},
+    return request(`/professors/${professorId}/courses`)
+  },
 
   async getReviews(professorId, params = {}) {
-    const q = new URLSearchParams(params).toString()
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(([_, v]) => v !== undefined && v !== null && v !== "")
+    )
+    const q = new URLSearchParams(cleanParams).toString()
     return request(`/professors/${professorId}/reviews${q ? "?" + q : ""}`)
+  },
+
+  async getRatingSummary(professorId) {
+    return request(`/professors/${professorId}/rating-summary`)
   },
 }
 

@@ -117,6 +117,7 @@ class ProfessorOut(BaseModel):
 
 class ProfessorOutWithStats(ProfessorOut):
     average_rating: Optional[float] = None
+    review_count: int = 0
 
 
 # ---------------------------------------------------------------------------
@@ -136,6 +137,13 @@ class CourseOut(BaseModel):
 
 class CourseOutWithStats(CourseOut):
     average_rating: Optional[float] = None
+    review_count: int = 0
+
+
+class RatingSummary(BaseModel):
+    average_rating: Optional[float] = None
+    review_count: int = 0
+    distribution: dict[int, int]
 
 
 # ---------------------------------------------------------------------------

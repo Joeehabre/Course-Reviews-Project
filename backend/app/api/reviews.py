@@ -3,13 +3,20 @@ Reviews routes — submit, edit, delete, like/dislike.
 """
 
 import uuid
-from typing import Literal
+from typing import Literal, Optional
 
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, Query, status, Depends
 
 from app.dependencies import DBDep, CurrentUser, CurrentUserOptional, CurrentStudent, AdminUser
-from app.schemas import ReviewCreate, ReviewUpdate, ReviewOut, ReviewStatusUpdate, InteractionResponse
+from app.schemas import (
+    ReviewCreate,
+    ReviewUpdate,
+    ReviewOut,
+    ReviewStatusUpdate,
+    InteractionResponse,
+    RatingSummary,
+)
 from app import crud
 
 router = APIRouter(tags=["reviews"])
@@ -110,6 +117,55 @@ async def get_professor_reviews(
         db, professor_id, sort_by=sort_by, skip=skip, limit=limit
     )
     return await _annotate_interactions(db, reviews, user)
+
+
+# ---------------------------------------------------------------------------
+# Reviews on a course
+# ---------------------------------------------------------------------------
+
+@router.get("/courses/{course_id}/reviews", response_model=list[ReviewOut])
+async def get_course_reviews(
+    course_id: uuid.UUID,
+    db: DBDep,
+    user: CurrentUserOptional,
+    professor_id: Optional[uuid.UUID] = Query(default=None),
+    sort_by: Literal["newest", "top_rated", "worst_rated", "most_liked"] = Query(default="newest"),
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=50, ge=1, le=100),
+):
+    course = await crud.courses.get_by_id(db, course_id)
+    if not course:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+
+    reviews = await crud.reviews.get_by_course(
+        db, course_id, professor_id=professor_id, sort_by=sort_by, skip=skip, limit=limit
+    )
+    return await _annotate_interactions(db, reviews, user)
+
+
+@router.get("/courses/{course_id}/rating-summary", response_model=RatingSummary)
+async def get_course_rating_summary(
+    course_id: uuid.UUID,
+    db: DBDep,
+    professor_id: Optional[uuid.UUID] = Query(default=None),
+):
+    course = await crud.courses.get_by_id(db, course_id)
+    if not course:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Course not found")
+    return await crud.reviews.get_rating_summary_for_course(
+        db, course_id, professor_id=professor_id
+    )
+
+
+@router.get("/professors/{professor_id}/rating-summary", response_model=RatingSummary)
+async def get_professor_rating_summary(
+    professor_id: uuid.UUID,
+    db: DBDep,
+):
+    professor = await crud.professors.get_by_id(db, professor_id)
+    if not professor:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Professor not found")
+    return await crud.reviews.get_rating_summary_for_professor(db, professor_id)
 
 
 # ---------------------------------------------------------------------------

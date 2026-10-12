@@ -4,6 +4,8 @@ import api from "../api";
 
 function Landing({ onViewCourseDetails, onViewProfessorReviews }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [departments, setDepartments] = useState([]);
+  const [selectedDepartment, setSelectedDepartment] = useState("");
   const [courses, setCourses] = useState([]);
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [professors, setProfessors] = useState([]);
@@ -43,6 +45,17 @@ function Landing({ onViewCourseDetails, onViewProfessorReviews }) {
   useEffect(() => {
     let isActive = true;
 
+    const fetchDepartments = async () => {
+      try {
+        const depts = await api.courses.getDepartments();
+        if (isActive && Array.isArray(depts)) {
+          setDepartments(depts);
+        }
+      } catch (err) {
+        console.error("Failed to load departments:", err);
+      }
+    };
+
     const fetchCourses = async () => {
       try {
         const coursesData = await api.courses.listAll();
@@ -50,7 +63,7 @@ function Landing({ onViewCourseDetails, onViewProfessorReviews }) {
         setCourses(coursesData || []);
         setFilteredCourses(coursesData || []);
       } catch (err) {
-        console.error("Failed to load data:", err);
+        console.error("Failed to load courses:", err);
       } finally {
         if (isActive) setCoursesLoading(false);
       }
@@ -63,13 +76,14 @@ function Landing({ onViewCourseDetails, onViewProfessorReviews }) {
         setProfessors(professorsData || []);
         setFilteredProfessors(professorsData || []);
       } catch (err) {
-        console.error("Failed to load data:", err);
+        console.error("Failed to load professors:", err);
       } finally {
         if (isActive) setProfessorsLoading(false);
       }
     };
 
     const frameId = window.requestAnimationFrame(() => {
+      fetchDepartments();
       fetchCourses();
       fetchProfessors();
     });
@@ -82,26 +96,38 @@ function Landing({ onViewCourseDetails, onViewProfessorReviews }) {
 
   useEffect(() => {
     let filtered = courses;
+    if (selectedDepartment) {
+      filtered = filtered.filter(
+        (c) => (c.department || "").toLowerCase() === selectedDepartment.toLowerCase()
+      );
+    }
     if (searchQuery) {
+      const q = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (c) =>
-          (c.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (c.code || "").toLowerCase().includes(searchQuery.toLowerCase())
+          (c.title || "").toLowerCase().includes(q) ||
+          (c.code || "").toLowerCase().includes(q)
       );
     }
     setFilteredCourses(filtered);
 
     let profFiltered = professors;
+    if (selectedDepartment) {
+      profFiltered = profFiltered.filter(
+        (p) => (p.department || "").toLowerCase() === selectedDepartment.toLowerCase()
+      );
+    }
     if (searchQuery) {
+      const q = searchQuery.toLowerCase();
       profFiltered = profFiltered.filter((p) =>
         (`${p.first_name || ""} ${p.last_name || ""}`)
           .toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        (p.department || "").toLowerCase().includes(searchQuery.toLowerCase())
+          .includes(q) ||
+        (p.department || "").toLowerCase().includes(q)
       );
     }
     setFilteredProfessors(profFiltered);
-  }, [searchQuery, courses, professors]);
+  }, [searchQuery, selectedDepartment, courses, professors]);
 
   useEffect(() => {
     setCoursesPage(1);
@@ -155,13 +181,47 @@ function Landing({ onViewCourseDetails, onViewProfessorReviews }) {
     <div className="landing-page">
       <main className="landing-main">
         <div className="search-section">
-          <input
-            type="text"
-            className="search-bar"
-            placeholder="🔍 Search courses, professors, or instructors..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          <div className="search-input-wrapper">
+            <input
+              type="text"
+              className="search-bar"
+              placeholder="🔍 Search courses by code or title, professors by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className="search-clear-btn"
+                onClick={() => setSearchQuery("")}
+                title="Clear search"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+
+          {departments.length > 0 && (
+            <div className="department-pills">
+              <button
+                type="button"
+                className={`dept-pill ${!selectedDepartment ? "active" : ""}`}
+                onClick={() => setSelectedDepartment("")}
+              >
+                All Departments
+              </button>
+              {departments.map((dept) => (
+                <button
+                  key={dept}
+                  type="button"
+                  className={`dept-pill ${selectedDepartment === dept ? "active" : ""}`}
+                  onClick={() => setSelectedDepartment(selectedDepartment === dept ? "" : dept)}
+                >
+                  {dept}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="courses-section">
@@ -173,13 +233,16 @@ function Landing({ onViewCourseDetails, onViewProfessorReviews }) {
               visibleCourses.map((course) => (
                 <div key={course.id} className="course-card">
                   <div className="course-content">
+                    <div className="course-header-row">
+                      <span className="course-dept-tag">{course.department}</span>
+                      <span className="course-rating-pill">
+                        ⭐ {course.average_rating != null ? course.average_rating.toFixed(1) : "N/A"}
+                      </span>
+                    </div>
                     <h3>{course.code} - {course.title}</h3>
                     <div className="course-meta">
-                      <span className="students">📚 Course</span>
-                      <span className="rating">
-                        ⭐ {course.average_rating != null
-                          ? course.average_rating.toFixed(1)
-                          : "N/A"}
+                      <span className="students">
+                        💬 {course.review_count || 0} review{course.review_count === 1 ? "" : "s"}
                       </span>
                     </div>
                     <button className="enroll-btn" onClick={() => onViewCourseDetails?.(course.id)}>
@@ -227,7 +290,15 @@ function Landing({ onViewCourseDetails, onViewProfessorReviews }) {
                 <div key={prof.id} className="professor-card">
                   <div className="prof-avatar">{getProfessorInitials(prof)}</div>
                   <h3>{prof.first_name} {prof.last_name}</h3>
-                  <p className="prof-subtitle">AUB Professor</p>
+                  <p className="prof-subtitle">{prof.department ? `${prof.department} Department` : "AUB Professor"}</p>
+                  <div className="prof-stats-row">
+                    <span className="prof-rating">
+                      ⭐ {prof.average_rating != null ? prof.average_rating.toFixed(1) : "N/A"}
+                    </span>
+                    <span className="prof-reviews-count">
+                      ({prof.review_count || 0} review{prof.review_count === 1 ? "" : "s"})
+                    </span>
+                  </div>
                   <button className="view-btn" onClick={() => onViewProfessorReviews?.(prof.id)}>
                     View Reviews
                   </button>
