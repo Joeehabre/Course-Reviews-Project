@@ -38,9 +38,19 @@ logger = get_logger(__name__)
 # CORS
 # ---------------------------------------------------------------------------
 
+cors_origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
+]
+if settings.FRONTEND_URL and settings.FRONTEND_URL not in cors_origins:
+    cors_origins.append(settings.FRONTEND_URL.rstrip("/"))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if settings.ENV == "dev" else [],
+    allow_origins=cors_origins if settings.ENV != "dev" else ["*"],
+    allow_origin_regex=r"^https://.*\.vercel\.app$" if settings.ENV != "dev" else None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

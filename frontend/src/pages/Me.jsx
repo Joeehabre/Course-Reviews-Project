@@ -119,7 +119,6 @@ function Me({ onLogout }) {
               <button
                 className="save-btn"
                 onClick={async () => {
-                  console.log("attempting to save major", editMajor, major)
                   setSaving(true)
                   setError("")
                   setMessage("")
@@ -137,7 +136,6 @@ function Me({ onLogout }) {
                     }
 
                     setMessage("Major saved successfully")
-                    console.log("major saved", updated)
                   } catch (err) {
                     console.error("Failed to update major", err)
                     setError(err.message || "Could not save major")

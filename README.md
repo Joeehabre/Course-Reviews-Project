@@ -107,6 +107,28 @@ npm run dev
 
 ---
 
+## Deployment
+
+### Frontend (Vercel)
+1. Import your forked repository on [Vercel](https://vercel.com).
+2. Set **Root Directory** to `frontend`.
+3. Set environment variable:
+   - `VITE_BACKEND_URL`: URL of your deployed backend API.
+4. Click **Deploy**.
+
+### Backend (Render / Railway)
+1. Create a Web Service pointing to your repository.
+2. Set **Root Directory** to `backend`.
+3. Set **Build Command**: `pip install -r requirements.txt && alembic upgrade head`
+4. Set **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+5. Configure environment variables:
+   - `DATABASE_URL`: PostgreSQL connection string (Neon, Supabase, or Render Postgres).
+   - `FRONTEND_URL`: Your deployed Vercel domain.
+   - `ENV`: `prod`
+   - `JWT_SECRET`: Random secret string.
+
+---
+
 ## Newman Testing
 
 The backend Newman suite reads its target host from environment variables instead of hardcoding localhost.

@@ -94,7 +94,24 @@ function App() {
   }
 
   if (loading) {
-    return <div style={{ padding: "20px" }}>Loading...</div>
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#f8f9fa",
+          fontFamily: "system-ui, -apple-system, sans-serif",
+          color: "#8b1538",
+        }}
+      >
+        <div style={{ fontSize: "36px", marginBottom: "8px" }}>📚</div>
+        <div style={{ fontSize: "18px", fontWeight: 700, letterSpacing: "0.5px" }}>AfterClass</div>
+        <div style={{ fontSize: "13px", color: "#6b7280", marginTop: "6px" }}>Loading your session...</div>
+      </div>
+    )
   }
 
   if (!user) {
@@ -107,15 +124,17 @@ function App() {
         style={{
           background: "linear-gradient(135deg, #8b1538, #5c0f25)",
           color: "white",
-          padding: "0 30px",
+          padding: "0 20px",
           display: "flex",
-          gap: "12px",
+          gap: "10px",
           alignItems: "center",
-          height: "52px",
+          height: "54px",
           position: "sticky",
           top: 0,
           zIndex: 200,
           boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+          overflowX: "auto",
+          whiteSpace: "nowrap",
         }}
       >
         <span style={{ fontWeight: 700, fontSize: "16px", marginRight: "10px", opacity: 0.9 }}>
