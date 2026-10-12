@@ -69,6 +69,15 @@ const auth = {
     token.clear()
   },
 
+  async devLogin(email) {
+    const data = await request("/auth/dev-login", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    })
+    token.set(data.access_token)
+    return data
+  },
+
   isLoggedIn() {
     return !!token.get()
   },

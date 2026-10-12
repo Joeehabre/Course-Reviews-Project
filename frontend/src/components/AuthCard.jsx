@@ -48,6 +48,14 @@ function AuthCard({ onLoginSuccess }) {
     setError("")
     setLoading(true)
     try {
+      try {
+        await api.auth.devLogin(lower)
+        if (onLoginSuccess) onLoginSuccess()
+        return
+      } catch {
+        // Continue to standard OTP or OAuth flow
+      }
+
       const resp = await api.auth.requestOtp(lower)
       // If backend short-circuits to OAuth, it returns { oauth: true, auth_url }
       if (resp && resp.oauth && resp.auth_url) {

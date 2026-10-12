@@ -60,6 +60,8 @@ class EntraAuthClient:
 
         async with httpx.AsyncClient() as client:
             response = await client.post(self.token_url, data=payload)
+            if response.status_code >= 400:
+                logger.error(f"Entra token exchange failed ({response.status_code}): {response.text}")
             response.raise_for_status()
             return response.json()
 

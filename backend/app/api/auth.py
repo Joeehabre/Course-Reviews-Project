@@ -222,6 +222,43 @@ async def oauth_callback(
     return RedirectResponse(url=redirect_url, status_code=302)
 
 
+@router.post("/dev-login", response_model=TokenResponse)
+async def dev_login(body: OTPRequest, db: DBDep):
+    """Direct sign-in for development and testing environments."""
+    if settings.ENV != "dev":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Dev login only enabled in development mode.",
+        )
+
+    email = body.email.lower().strip()
+    role_name = _get_role_from_aub_email(email)
+    if role_name is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only AUB email addresses (@mail.aub.edu or @aub.edu.lb) are allowed.",
+        )
+
+    idx = blind_index(email)
+    user = await crud.users.get_by_email(db, email)
+    if user is None:
+        user = await crud.users.create(db, email=email)
+        if role_name == "student":
+            await crud.students.create(db, user_id=user.id)
+        role = await crud.roles.get_role_by_name(db, role_name)
+        if role:
+            await crud.roles.assign_role_to_user(db, user_id=user.id, role_id=role.id)
+
+    await crud.users.update_last_login(db, user)
+    await db.commit()
+
+    roles = await crud.roles.get_user_roles(db, user.id)
+    primary_role = roles[0].role if roles else role_name
+    token = create_access_token(user_id=user.id, role=primary_role)
+    logger.info(f"Dev sign-in successful — role={primary_role} email_index={idx}")
+    return TokenResponse(access_token=token)
+
+
 # ---------------------------------------------------------------------------
 # OTP routes (fallback when ENABLE_OAUTH=false)
 # ---------------------------------------------------------------------------
@@ -279,6 +316,9 @@ async def request_otp(body: OTPRequest, db: DBDep):
 
     sent = await _send_otp_email(email, plain_code)
     if not sent:
+        if settings.ENV == "dev":
+            logger.info(f"[DEV] Email dispatch unavailable. Verification code for {email}: {plain_code}")
+            return {"message": f"Verification code generated (dev: {plain_code})"}
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Failed to send OTP email. Check SMTP settings in .env.",
