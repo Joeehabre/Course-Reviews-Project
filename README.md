@@ -16,17 +16,30 @@ Built as a team project for **CMPS 271** at the **American University of Beirut 
 
 ---
 
-## My Contributions
+## Base Team Project vs. This Extended Build
 
-This was a five-person team project. My main work:
+This repository is an **upgraded, independently deployable build** of the original five-person CMPS 271 course project. While the baseline group repository implemented core review submissions, this build introduces architectural stability fixes, query optimizations, enhanced analytics, and an improved user interface:
 
-- **Admin API**: wrote the admin endpoints (`backend/app/api/admin.py`) in full
-- **Admin dashboard**: corrected the data shown to admins and added admin access from the navbar
-- **Review interactions**: the like / dislike mechanism on the front end
-- **UI work**: landing page design, the app shell and routing (`App.jsx`), and profile page layout
-- **Project setup**: repository README, MIT license, and the CI pipeline (frontend build + backend lint)
+| Area | Base Team Project | Joe's Extended Build |
+| :--- | :--- | :--- |
+| **Course Review Queries** | Client-side N-request waterfall: looped through every section with separate API calls, resulting in fragmented client-side sorting. | Direct server-side batch endpoint (`/courses/{id}/reviews`) with global sorting (`top_rated`, `newest`, `most_liked`) and professor filtering. |
+| **Rating Analytics** | Only basic average rating per course. | Full rating distribution breakdown (1–5 star progress bars), total review counters, and professor rating summaries. |
+| **Landing Page Discovery** | Basic text search with no department categorization. | Interactive department filter chips (CMPS, MATH, EECE, etc.), clearable search bar, and professor rating badges. |
+| **Review Submission UX** | Standard numeric dropdown selector. | Interactive 1–5 star rating buttons with dynamic descriptive labels. |
+| **Database Performance** | Basic table scans without compound indexes. | Performance indexes (`reviews (section_id, status)`, `reviews (status, created_at)`, `sections (course_id, professor_id)`) via linear Alembic migration. |
+| **Database Migrations** | Branching multi-head conflicts (`add_cmps_courses` vs `fix_violation_status_constraint`). | Clean, single-head linear migration sequence (12 revisions). |
+| **Async ORM Stability** | Unhandled `MissingGreenlet` exceptions on lazy-loaded relationships. | Explicit eager-loading (`selectinload`) on sections, professors, and decoupled user moderation dependencies. |
+| **Admin API Security** | Legacy synchronous database queries inside an async FastAPI engine; unmounted router. | Fully asynchronous `AsyncSession` route handlers, mounted under `/api/v1/admin` with verified admin dependencies. |
+| **Student Violation History** | Profile page called an admin-only endpoint, returning a 403 Forbidden error. | Dedicated `/users/me/violations` endpoint allowing students to inspect their warning history. |
+| **Deployment Independence** | Hardcoded dev CORS blocking external Vercel deployments. | Production CORS regex (`*.vercel.app`), `Procfile`, and `render.yaml` for 1-click independent cloud deployment. |
 
-My teammates built the remaining features, and several of them contributed more of the codebase than I did. Full authorship is visible in the commit history.
+### Original Team Contributions
+In the collaborative phase of this project, my initial contributions included:
+- **Admin API**: Implemented the administrative endpoint suite (`backend/app/api/admin.py`).
+- **Admin Dashboard**: Moderation views and role-based navbar access.
+- **Review Interactions**: Like/dislike client logic and interaction state management.
+- **Application Shell**: Base routing (`App.jsx`), profile layout, and initial repository CI workflows.
+- **Teammate Contributions**: My teammates developed the core authentication flows, initial course/section seed datasets, and baseline review data structures visible in the earlier commit history.
 
 ---
 

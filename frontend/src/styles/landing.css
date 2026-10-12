@@ -450,3 +450,12 @@
   color: #666;
   font-size: 16px;
 }
+
+.landing-footer {
+  border-top: 1px solid #e5e7eb;
+  padding: 28px 20px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 13px;
+  background: #ffffff;
+}

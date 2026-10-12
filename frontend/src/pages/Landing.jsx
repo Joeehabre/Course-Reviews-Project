@@ -331,6 +331,9 @@ function Landing({ onViewCourseDetails, onViewProfessorReviews }) {
           )}
         </div>
       </main>
+      <footer className="landing-footer">
+        <p>© 2026 AfterClass · Independent Build by Joe Habre (CMPS 271, AUB)</p>
+      </footer>
     </div>
   );
 }

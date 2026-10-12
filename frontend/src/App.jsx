@@ -137,9 +137,26 @@ function App() {
           whiteSpace: "nowrap",
         }}
       >
-        <span style={{ fontWeight: 700, fontSize: "16px", marginRight: "10px", opacity: 0.9 }}>
-          📚 AfterClass
-        </span>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", marginRight: "10px" }}>
+          <span style={{ fontWeight: 700, fontSize: "16px", opacity: 0.95 }}>
+            📚 AfterClass
+          </span>
+          <span
+            style={{
+              background: "rgba(255,255,255,0.18)",
+              border: "1px solid rgba(255,255,255,0.22)",
+              color: "white",
+              padding: "1px 6px",
+              borderRadius: "999px",
+              fontSize: "10px",
+              fontWeight: 700,
+              letterSpacing: "0.4px",
+              textTransform: "uppercase",
+            }}
+          >
+            Extended
+          </span>
+        </div>
 
         <NavButton active={currentPage === "landing"} onClick={() => setCurrentPage("landing")}>
           <span style={{ fontSize: "14px" }}>🏠</span>
