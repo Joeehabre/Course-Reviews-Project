@@ -218,7 +218,7 @@ async def get_stats_for_courses(
     )
     return {
         row[0]: {
-            "average_rating": float(row[1]) if row[1] is not None else None,
+            "average_rating": round(float(row[1]), 2) if row[1] is not None else None,
             "review_count": int(row[2]) if row[2] is not None else 0,
         }
         for row in result.all()
@@ -248,7 +248,7 @@ async def get_stats_for_professors(
     )
     return {
         row[0]: {
-            "average_rating": float(row[1]) if row[1] is not None else None,
+            "average_rating": round(float(row[1]), 2) if row[1] is not None else None,
             "review_count": int(row[2]) if row[2] is not None else 0,
         }
         for row in result.all()

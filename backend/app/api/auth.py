@@ -249,11 +249,17 @@ async def dev_login(body: OTPRequest, db: DBDep):
         if role:
             await crud.roles.assign_role_to_user(db, user_id=user.id, role_id=role.id)
 
+    if "admin" in email:
+        admin_role = await crud.roles.get_role_by_name(db, "admin")
+        if admin_role:
+            await crud.roles.assign_role_to_user(db, user_id=user.id, role_id=admin_role.id)
+
     await crud.users.update_last_login(db, user)
     await db.commit()
 
     roles = await crud.roles.get_user_roles(db, user.id)
-    primary_role = roles[0].role if roles else role_name
+    role_names = [r.role for r in roles]
+    primary_role = "admin" if "admin" in role_names else (roles[0].role if roles else role_name)
     token = create_access_token(user_id=user.id, role=primary_role)
     logger.info(f"Dev sign-in successful — role={primary_role} email_index={idx}")
     return TokenResponse(access_token=token)
